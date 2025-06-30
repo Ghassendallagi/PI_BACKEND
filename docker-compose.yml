@@ -1,0 +1,116 @@
+version: "3.8"
+
+services:
+
+  mysqldb:
+    image: mysql:8.3.0
+    container_name: mysqldb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE=ServiceMs
+    ports:
+      - "3306:3306"
+    networks:
+      - ms
+    volumes:
+      - mysql-db:/var/lib/mysql
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - ms
+
+  config-server:
+    build: ./ConfigServer
+    container_name: config-server
+    restart: always
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env
+    environment:
+      - GIT_URI=https://github.com/ghassendallegi/ms_config.git
+      - GIT_USERNAME=ghassendallegi
+      - GIT_TOKEN=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
+    networks:
+      - ms
+
+  discovery-server:
+    build: ./DiscoveryServer
+    container_name: discovery-server
+    restart: always
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server
+    networks:
+      - ms
+
+  reservation-ms:
+    build: ./ReservationMS
+    container_name: reservation-ms
+    restart: always
+    ports:
+      - "8092:8092"
+    depends_on:
+      - discovery-server
+      - mongodb
+      - config-server
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/ReservationMS
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+
+    networks:
+      - ms
+
+  services-ms:
+    build: ./ServiceMS
+    container_name: service-ms
+    restart: always
+    ports:
+      - "8082:8082"
+    depends_on:
+      - discovery-server
+      - mysqldb
+      - config-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/ServiceMs?createDatabaseIfNotExist=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    networks:
+      - ms
+
+  gateway-api:
+    build: ./GatewayServer
+    container_name: gateway-api
+    restart: always
+    ports:
+      - "8090:8090"
+    depends_on:
+      - reservation-ms
+      - services-ms
+      - discovery-server
+      - config-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    networks:
+      - ms
+
+volumes:
+  mysql-db:
+  mongodb:
+
+networks:
+  ms:
