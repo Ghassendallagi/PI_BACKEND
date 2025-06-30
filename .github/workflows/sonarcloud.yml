@@ -38,6 +38,7 @@ jobs:
             ${{ runner.os }}-m2
 
       - name: Build and analyze with SonarCloud
+        working-directory: ServiceMS
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
