@@ -4,7 +4,6 @@ import tn.esprit.spring.servicems.entity.ServiceClient;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import tn.starter.mysqlShared.dto.auteurDTO;
 
 @FeignClient(name = "AuteurMS")
 public interface ClientClient {
