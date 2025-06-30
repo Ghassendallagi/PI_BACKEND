@@ -19,7 +19,7 @@
         <java.version>17</java.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <sonar.projectKey>servicems</sonar.projectKey>
+        <sonar.projectKey>Ghassendallagi_PI_BACKEND</sonar.projectKey>
         <sonar.organization>ServiceMS</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
