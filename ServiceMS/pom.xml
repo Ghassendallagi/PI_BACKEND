@@ -43,7 +43,7 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!--0000
+        <!--
      <dependency>
          <groupId>tn.starter</groupId>
          <artifactId>mysqlShared</artifactId>
