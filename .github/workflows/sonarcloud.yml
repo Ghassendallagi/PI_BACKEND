@@ -51,13 +51,13 @@ jobs:
 
       - name: Log in to Nexus Docker Registry
         run: |
-          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login 902f-197-19-231-175.ngrok-free.app -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
+          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login b7cf-197-19-231-175.ngrok-free.app --username ${{ secrets.NEXUS_USERNAME }} --password-stdin
 
       - name: Build Docker image
         working-directory: ServiceMS
         run: |
-          docker build -t 902f-197-19-231-175.ngrok-free.app/pi_back/gestion-service:latest .
+          docker build -t b7cf-197-19-231-175.ngrok-free.app/pi_back/gestion-service:latest .
 
       - name: Push Docker image to Nexus
         run: |
-          docker push 1902f-197-19-231-175.ngrok-free.app/pi_back/gestion-service:latest
+          docker push b7cf-197-19-231-175.ngrok-free.app/pi_back/gestion-service:latest
