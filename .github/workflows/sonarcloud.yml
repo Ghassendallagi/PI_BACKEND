@@ -1,4 +1,4 @@
-name: SonarCloud Analysis
+name: SonarCloud Analysis & Docker Deploy
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: SonarCloud + Deploy Nexus
+    name: SonarCloud + Docker + Nexus
     runs-on: ubuntu-latest
 
     steps:
@@ -42,30 +42,22 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn clean verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          mvn clean verify sonar:sonar \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-      - name: Deploy JAR to Nexus
+      - name: Package JAR for Docker
         working-directory: ServiceMS
-        env:
-          MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: mvn clean package -DskipTests
+
+      - name: Log in to Nexus Docker Registry
         run: |
-          mvn deploy -DskipTests -DaltDeploymentRepository=nexus::default::${{ secrets.NEXUS_URL }} \
-            -Dusername=$MAVEN_USERNAME -Dpassword=$MAVEN_PASSWORD
+          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login 1314-197-18-118-229.ngrok-free.app -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
 
       - name: Build Docker image
         working-directory: ServiceMS
         run: |
-          docker build -t myapp:latest .
-
-      - name: Log in to Nexus Docker Registry
-        run: |
-          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login ${{ secrets.NEXUS_DOCKER_REGISTRY }} -u ${{ secrets.NEXUS_USERNAME }} --password-stdin
-
-      - name: Tag Docker image
-        run: |
-          docker tag myapp:latest ${{ secrets.NEXUS_DOCKER_REGISTRY }}/myapp:latest
+          docker build -t 1314-197-18-118-229.ngrok-free.app/pi_back/gestion-service:latest .
 
       - name: Push Docker image to Nexus
         run: |
-          docker push ${{ secrets.NEXUS_DOCKER_REGISTRY }}/myapp:latest
+          docker push 1314-197-18-118-229.ngrok-free.app/pi_back/gestion-service:latest
